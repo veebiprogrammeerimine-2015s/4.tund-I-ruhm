@@ -4,6 +4,11 @@
     require_once("../config.php");
     $database = "if15_romil_1";
     $mysqli = new mysqli($servername, $username, $password, $database);
+    
+    //check connection
+    if($mysqli->connect_error) {
+        die("connect error ".mysqli_connect_error());
+    }
 
 
   // muuutujad errorite jaoks
@@ -70,9 +75,25 @@
 			if(	$create_email_error == "" && $create_password_error == ""){
 				echo hash("sha512", $create_password);
                 echo "Võib kasutajat luua! Kasutajanimi on ".$create_email." ja parool on ".$create_password;
-      }
+                
+                // tekitan parooliräsi
+                $hash = hash("sha512", $create_password);
+                
+                //salvestan andmebaasi
+                $stmt = $mysqli->prepare("INSERT INTO user_sample (email, password) VALUES (?,?)");
+                
+                // paneme muutujad küsimärkide asemel
+                // ss - s string, iga muutuja koht 1 täht
+                $stmt->bind_param("ss", $create_email, $hash);
+                
+                //käivitab sisestuse
+                $stmt->execute();
+                $stmt->close();
+                
+                
+            }
 
-    } // create if end
+        } // create if end
 
 	}
 
@@ -83,7 +104,11 @@
   	$data = htmlspecialchars($data);
   	return $data;
   }
-
+   
+  
+  // paneme ühenduse kinni
+  $mysqli->close();
+  
 ?>
 <!DOCTYPE html>
 <html>
