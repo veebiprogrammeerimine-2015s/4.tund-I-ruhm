@@ -47,7 +47,31 @@
       // Kui oleme siia jõudnud, võime kasutaja sisse logida
 			if($password_error == "" && $email_error == ""){
 				echo "Võib sisse logida! Kasutajanimi on ".$email." ja parool on ".$password;
-			}
+			
+                $hash = hash("sha512", $password);
+                
+                $stmt = $mysqli->prepare("SELECT id, email FROM user_sample WHERE email=? AND password=?");
+                // küsimärkide asendus
+                $stmt->bind_param("ss", $email, $hash);
+                //ab tulnud muutujad
+                $stmt->bind_result($id_from_db, $email_from_db);
+                $stmt->execute();
+                
+                // teeb päringu ja kui on tõene (st et ab oli see väärtus)
+                if($stmt->fetch()){
+                    
+                    // Kasutaja email ja parool õiged
+                    echo "Kasutaja logis sisse id=".$id_from_db;
+                    
+                }else{
+                    echo "Wrong credentials!";
+                }
+                
+                $stmt->close();
+                
+            
+            
+            }
 
 		} // login if end
 
@@ -81,6 +105,10 @@
                 
                 //salvestan andmebaasi
                 $stmt = $mysqli->prepare("INSERT INTO user_sample (email, password) VALUES (?,?)");
+                
+                //kirjutan välja error
+                //echo $stmt->error;
+                //echo $mysqli->error;
                 
                 // paneme muutujad küsimärkide asemel
                 // ss - s string, iga muutuja koht 1 täht
